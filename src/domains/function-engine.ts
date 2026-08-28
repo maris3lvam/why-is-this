@@ -11,7 +11,10 @@ import { detectType } from '../core/type-detector.js';
 
 type AnyFunction = (...args: any[]) => any;
 
-const trackedWrappers = new WeakMap<AnyFunction, { original: AnyFunction; callCount: number }>();
+const trackedWrappers = new WeakMap<
+  AnyFunction,
+  { original: AnyFunction; callCount: number }
+>();
 const originalFunctions = new WeakMap<AnyFunction, AnyFunction>();
 
 /**
@@ -35,13 +38,18 @@ export function inspectFunction(fn: unknown): FunctionDiagnosticResult {
 
   const type = detectType(fn);
   const rawFn = fn as AnyFunction;
-  const isAsync = type === 'async-function' || type === 'async-generator-function';
-  const isGenerator = type === 'generator-function' || type === 'async-generator-function';
+  const isAsync =
+    type === 'async-function' || type === 'async-generator-function';
+  const isGenerator =
+    type === 'generator-function' || type === 'async-generator-function';
 
   let isArrow = false;
   try {
     const src = Function.prototype.toString.call(rawFn);
-    isArrow = !src.startsWith('function') && !src.startsWith('async function') && src.includes('=>');
+    isArrow =
+      !src.startsWith('function') &&
+      !src.startsWith('async function') &&
+      src.includes('=>');
   } catch {
     // Proxy safety
   }

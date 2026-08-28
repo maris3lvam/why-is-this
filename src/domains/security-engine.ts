@@ -4,7 +4,10 @@
  * Local-only, zero network transmission. Automatically detects AWS keys, JWTs, Bearer tokens, and secrets.
  */
 
-import type { SecretScanMatch, SecurityDiagnosticResult } from '../models/domain-results.js';
+import type {
+  SecretScanMatch,
+  SecurityDiagnosticResult,
+} from '../models/domain-results.js';
 import { globalConfig } from '../core/config.js';
 import { isObjectLike } from '../core/type-detector.js';
 
@@ -48,7 +51,8 @@ export function redactObject<T>(obj: T, seen = new Set<object>()): T {
   seen.add(targetObj);
 
   const config = globalConfig.get().security;
-  const sensitiveKeyPattern = /(?:secret|password|passwd|key|token|auth|cookie|authorization)/i;
+  const sensitiveKeyPattern =
+    /(?:secret|password|passwd|key|token|auth|cookie|authorization)/i;
 
   if (Array.isArray(obj)) {
     return obj.map((item) => redactObject(item, seen)) as unknown as T;

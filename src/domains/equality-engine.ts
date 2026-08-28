@@ -5,7 +5,10 @@
  * Never executes getters during deep equality checks.
  */
 
-import type { ExpectResult, ValidationResult } from '../models/domain-results.js';
+import type {
+  ExpectResult,
+  ValidationResult,
+} from '../models/domain-results.js';
 import { detectType } from '../core/type-detector.js';
 
 export class WhyAssertionError extends Error {
@@ -18,7 +21,10 @@ export class WhyAssertionError extends Error {
 /**
  * Checks if a value matches an expected type name or constructor function.
  */
-export function is(value: unknown, expected: string | (new (...args: unknown[]) => unknown)): boolean {
+export function is(
+  value: unknown,
+  expected: string | (new (...args: unknown[]) => unknown),
+): boolean {
   if (typeof expected === 'string') {
     return detectType(value) === expected.toLowerCase();
   }
@@ -56,14 +62,23 @@ export function equal(a: unknown, b: unknown): boolean {
 /**
  * Deep equality check. Safe against circular references and getters.
  */
-export function deepEqual(a: unknown, b: unknown, seen = new Map<object, object>()): boolean {
+export function deepEqual(
+  a: unknown,
+  b: unknown,
+  seen = new Map<object, object>(),
+): boolean {
   if (Object.is(a, b)) return true;
 
   const typeA = detectType(a);
   const typeB = detectType(b);
   if (typeA !== typeB) return false;
 
-  if (typeof a !== 'object' || a === null || typeof b !== 'object' || b === null) {
+  if (
+    typeof a !== 'object' ||
+    a === null ||
+    typeof b !== 'object' ||
+    b === null
+  ) {
     return false;
   }
 
@@ -143,7 +158,10 @@ export function deepEqual(a: unknown, b: unknown, seen = new Map<object, object>
 /**
  * Asserts a condition; throws WhyAssertionError if false.
  */
-export function assert(condition: unknown, message = 'Assertion failed'): asserts condition {
+export function assert(
+  condition: unknown,
+  message = 'Assertion failed',
+): asserts condition {
   if (!condition) {
     throw new WhyAssertionError(message);
   }
@@ -161,7 +179,9 @@ export function expectVal(value: unknown, expected: unknown): ExpectResult {
     pass,
     actual: value,
     expected,
-    message: pass ? 'Value matches expectation' : 'Value does not match expectation',
+    message: pass
+      ? 'Value matches expectation'
+      : 'Value does not match expectation',
   });
 }
 
@@ -169,7 +189,8 @@ export function expectVal(value: unknown, expected: unknown): ExpectResult {
  * Structural validity check (non-null, non-undefined, non-NaN).
  */
 export function valid(value: unknown): ValidationResult {
-  const isInvalid = value === undefined || value === null || Number.isNaN(value);
+  const isInvalid =
+    value === undefined || value === null || Number.isNaN(value);
   return Object.freeze({
     timestamp: Date.now(),
     domain: 'validation',
@@ -193,7 +214,10 @@ export function invalid(value: unknown): ValidationResult {
 /**
  * Explicit safe coercion helper.
  */
-export function coerce(value: unknown, target: 'string' | 'number' | 'boolean'): unknown {
+export function coerce(
+  value: unknown,
+  target: 'string' | 'number' | 'boolean',
+): unknown {
   try {
     switch (target) {
       case 'string':

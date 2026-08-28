@@ -12,7 +12,7 @@
 [![types](https://img.shields.io/badge/types-TypeScript-blue.svg?style=flat-square)](https://www.typescriptlang.org)
 [![build status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square)](#)
 
-*Answer the core question: **What is this value, what is unusual about it, and why might it be behaving this way?***
+_Answer the core question: **What is this value, what is unusual about it, and why might it be behaving this way?**_
 
 </div>
 
@@ -42,6 +42,7 @@
 ## ❓ Why `why-is-this`?
 
 Standard JavaScript tools (`console.log`, `typeof`, `JSON.stringify`) often fail when debugging complex runtime data:
+
 - `typeof null` returns `"object"` (a 30-year-old JavaScript quirk).
 - `JSON.stringify(circularObj)` throws `TypeError: Converting circular structure to JSON`.
 - Inspecting objects with `getter` accessors can trigger unintended side effects, database queries, or runtime crashes.
@@ -87,7 +88,7 @@ user.self = user; // Circular reference loop!
 // 1. Silent Inspection Result
 const res = why(user);
 console.log(res.isCircular); // true
-console.log(res.type);       // 'object'
+console.log(res.type); // 'object'
 
 // 2. Single-line Description
 console.log(why.describe(user));
@@ -204,9 +205,12 @@ const timing = why.measure('db-query');
 console.log(`Query took ${timing.durationMs}ms`);
 
 // 2. Controlled Benchmarking with p50/p95/p99 statistics
-const bench = why.benchmark(() => {
-  Math.sqrt(Math.random() * 1000);
-}, { testIterations: 1000 });
+const bench = why.benchmark(
+  () => {
+    Math.sqrt(Math.random() * 1000);
+  },
+  { testIterations: 1000 },
+);
 
 console.log(`Ops/Sec: ${bench.opsPerSec}`);
 console.log(`p95 Latency: ${bench.p95Ms}ms`);
@@ -218,11 +222,13 @@ Parse stack traces into structured frames and resolve wrapped error cause chains
 
 ```ts
 const dbError = new TypeError('Connection pool exhausted');
-const appError = new Error('HTTP 500 Internal Server Error', { cause: dbError });
+const appError = new Error('HTTP 500 Internal Server Error', {
+  cause: dbError,
+});
 
 // Find the deepest root cause in the chain
 const root = why.rootCause(appError);
-console.log(root.name);    // 'TypeError'
+console.log(root.name); // 'TypeError'
 console.log(root.message); // 'Connection pool exhausted'
 
 // Classify error type
@@ -249,110 +255,110 @@ const sarifLog = report.toSARIF();
 
 ### 1. Core Inspection & Type Classification
 
-| Method | Return Type | Description |
-|---|---|---|
-| `why(val)` / `why.inspect(val)` | `InspectionResult` | Performs deep getter-safe structural inspection |
-| `why.explain(val)` | `ExplainResult` | Returns structured findings, severity, and formatted REPL text |
-| `why.describe(val)` | `string` | Generates concise single-line human-readable summary |
-| `why.type(val)` | `DetectedType` | Classifies value into one of 28 distinct runtime categories |
-| `why.value(val)` | `SafeValue` | Safe representation without getter evaluation |
-| `why.keys(val)` | `KeyInfo[]` | Metadata for own property keys (string/symbol, enumerable/non-enumerable) |
-| `why.values(val)` | `SafeValue[]` | Safe property values without accessor execution |
-| `why.entries(val)` | `EntryInfo[]` | Paired key metadata and safe values |
-| `why.size(val)` | `SizeInfo` | Semantic size (`property-count`, `byte-length`, `collection-size`) |
-| `why.depth(val)` | `number` | Maximum property nesting depth |
-| `why.prototype(val)` | `PrototypeInfo` | Prototype chain metadata and null-prototype check |
-| `why.constructor(val)` | `ConstructorInfo` | Prototype-based constructor resolution |
-| `why.references(val)` | `RepeatedRefInfo[]` | Identifies objects referenced at multiple paths |
-| `why.circular(val)` | `CircularResult` | Cycle detection with exact back-edge path locations |
+| Method                          | Return Type         | Description                                                               |
+| ------------------------------- | ------------------- | ------------------------------------------------------------------------- |
+| `why(val)` / `why.inspect(val)` | `InspectionResult`  | Performs deep getter-safe structural inspection                           |
+| `why.explain(val)`              | `ExplainResult`     | Returns structured findings, severity, and formatted REPL text            |
+| `why.describe(val)`             | `string`            | Generates concise single-line human-readable summary                      |
+| `why.type(val)`                 | `DetectedType`      | Classifies value into one of 28 distinct runtime categories               |
+| `why.value(val)`                | `SafeValue`         | Safe representation without getter evaluation                             |
+| `why.keys(val)`                 | `KeyInfo[]`         | Metadata for own property keys (string/symbol, enumerable/non-enumerable) |
+| `why.values(val)`               | `SafeValue[]`       | Safe property values without accessor execution                           |
+| `why.entries(val)`              | `EntryInfo[]`       | Paired key metadata and safe values                                       |
+| `why.size(val)`                 | `SizeInfo`          | Semantic size (`property-count`, `byte-length`, `collection-size`)        |
+| `why.depth(val)`                | `number`            | Maximum property nesting depth                                            |
+| `why.prototype(val)`            | `PrototypeInfo`     | Prototype chain metadata and null-prototype check                         |
+| `why.constructor(val)`          | `ConstructorInfo`   | Prototype-based constructor resolution                                    |
+| `why.references(val)`           | `RepeatedRefInfo[]` | Identifies objects referenced at multiple paths                           |
+| `why.circular(val)`             | `CircularResult`    | Cycle detection with exact back-edge path locations                       |
 
 ### 2. Type Testing & Equality
 
-| Method | Return Type | Description |
-|---|---|---|
-| `why.is(val, expected)` | `boolean` | Check type string or constructor (`why.is(val, Date)`) |
-| `why.same(a, b)` | `boolean` | Evaluates identity reference equality (`Object.is(a, b)`) |
-| `why.strictEqual(a, b)` | `boolean` | Strict equality (`a === b`) |
-| `why.equal(a, b)` | `boolean` | Loose semantic equality (`a == b`) |
-| `why.deepEqual(a, b)` | `boolean` | Safe circular-aware deep equality comparison |
-| `why.assert(cond, msg?)` | `asserts cond` | Asserts condition; throws `WhyAssertionError` if false |
-| `why.expect(val, exp)` | `ExpectResult` | Non-throwing expectation returning `{ pass, actual, expected }` |
-| `why.valid(val)` / `why.invalid(val)` | `ValidationResult` | Structural non-null/non-undefined/non-NaN validation |
-| `why.coerce(val, target)` | `unknown` | Explicit safe coercion helper (`'string' \| 'number' \| 'boolean'`) |
+| Method                                | Return Type        | Description                                                         |
+| ------------------------------------- | ------------------ | ------------------------------------------------------------------- |
+| `why.is(val, expected)`               | `boolean`          | Check type string or constructor (`why.is(val, Date)`)              |
+| `why.same(a, b)`                      | `boolean`          | Evaluates identity reference equality (`Object.is(a, b)`)           |
+| `why.strictEqual(a, b)`               | `boolean`          | Strict equality (`a === b`)                                         |
+| `why.equal(a, b)`                     | `boolean`          | Loose semantic equality (`a == b`)                                  |
+| `why.deepEqual(a, b)`                 | `boolean`          | Safe circular-aware deep equality comparison                        |
+| `why.assert(cond, msg?)`              | `asserts cond`     | Asserts condition; throws `WhyAssertionError` if false              |
+| `why.expect(val, exp)`                | `ExpectResult`     | Non-throwing expectation returning `{ pass, actual, expected }`     |
+| `why.valid(val)` / `why.invalid(val)` | `ValidationResult` | Structural non-null/non-undefined/non-NaN validation                |
+| `why.coerce(val, target)`             | `unknown`          | Explicit safe coercion helper (`'string' \| 'number' \| 'boolean'`) |
 
 ### 3. Object Diff & Snapshots
 
-| Method | Return Type | Description |
-|---|---|---|
-| `why.diff(a, b)` | `DiffResult` | Full object diff returning added, removed, modified, and unchanged entries |
-| `why.changed(a, b)` / `why.unchanged(a, b)` | `boolean` | Predicates checking structural difference |
-| `why.added(a, b)` / `why.removed(a, b)` | `EntryInfo[]` | List of added or removed properties |
-| `why.modified(a, b)` | `ModifiedEntryInfo[]` | List of modified properties with `oldValue` and `newValue` |
-| `why.reference(a, b)` | `ReferenceRelationshipResult` | Reference relationship analysis |
-| `why.snapshot(val)` | `unknown` | Creates a safe, bounded snapshot clone |
+| Method                                      | Return Type                   | Description                                                                |
+| ------------------------------------------- | ----------------------------- | -------------------------------------------------------------------------- |
+| `why.diff(a, b)`                            | `DiffResult`                  | Full object diff returning added, removed, modified, and unchanged entries |
+| `why.changed(a, b)` / `why.unchanged(a, b)` | `boolean`                     | Predicates checking structural difference                                  |
+| `why.added(a, b)` / `why.removed(a, b)`     | `EntryInfo[]`                 | List of added or removed properties                                        |
+| `why.modified(a, b)`                        | `ModifiedEntryInfo[]`         | List of modified properties with `oldValue` and `newValue`                 |
+| `why.reference(a, b)`                       | `ReferenceRelationshipResult` | Reference relationship analysis                                            |
+| `why.snapshot(val)`                         | `unknown`                     | Creates a safe, bounded snapshot clone                                     |
 
 ### 4. Property & Path Debugging
 
-| Method | Return Type | Description |
-|---|---|---|
-| `why.path(val, pathStr)` / `why.resolve(val, pathStr)` | `PropertyPathResult` | Getter-free nested path resolution (`'a.b.c'`) |
-| `why.get(val, key)` | `SafeValue` | Safe single property read |
-| `why.has(val, key)` | `boolean` | Distinguishes `{ x: undefined }` from `{}` |
-| `why.exists(val, pathStr)` | `boolean` | Path existence check |
-| `why.missing(val, pathStr)` | `string \| undefined` | Diagnostic explanation of path breakdown |
-| `why.undefined(val)` / `why.null(val)` | `boolean` | Strict type predicates |
-| `why.optional(val, pathStr, default)` | `{ value, exists }` | Optional chain resolution with fallback default |
+| Method                                                 | Return Type           | Description                                     |
+| ------------------------------------------------------ | --------------------- | ----------------------------------------------- |
+| `why.path(val, pathStr)` / `why.resolve(val, pathStr)` | `PropertyPathResult`  | Getter-free nested path resolution (`'a.b.c'`)  |
+| `why.get(val, key)`                                    | `SafeValue`           | Safe single property read                       |
+| `why.has(val, key)`                                    | `boolean`             | Distinguishes `{ x: undefined }` from `{}`      |
+| `why.exists(val, pathStr)`                             | `boolean`             | Path existence check                            |
+| `why.missing(val, pathStr)`                            | `string \| undefined` | Diagnostic explanation of path breakdown        |
+| `why.undefined(val)` / `why.null(val)`                 | `boolean`             | Strict type predicates                          |
+| `why.optional(val, pathStr, default)`                  | `{ value, exists }`   | Optional chain resolution with fallback default |
 
 ### 5. Serialization & Utilities
 
-| Method | Return Type | Description |
-|---|---|---|
-| `why.json(val)` / `why.stringify(val)` / `why.circularJSON(val)` | `string` | Circular-safe JSON stringifier |
-| `why.parse(str)` | `T \| null` | Safe JSON parser |
-| `why.serializable(val)` | `boolean` | Checks if value can be JSON stringified safely |
-| `why.clone(val)` | `T` | Safe deep cloning using `structuredClone` / fallback |
-| `why.invalidDate(val)` | `boolean` | Identifies invalid Date instances (`NaN` timestamp) |
-| `why.whitespace(str)` | `boolean` | Checks if string is whitespace-only |
-| `why.invisible(str)` | `boolean` | Detects zero-width / invisible Unicode characters |
-| `why.precision(num)` | `number` | Calculates decimal precision count |
+| Method                                                           | Return Type | Description                                          |
+| ---------------------------------------------------------------- | ----------- | ---------------------------------------------------- |
+| `why.json(val)` / `why.stringify(val)` / `why.circularJSON(val)` | `string`    | Circular-safe JSON stringifier                       |
+| `why.parse(str)`                                                 | `T \| null` | Safe JSON parser                                     |
+| `why.serializable(val)`                                          | `boolean`   | Checks if value can be JSON stringified safely       |
+| `why.clone(val)`                                                 | `T`         | Safe deep cloning using `structuredClone` / fallback |
+| `why.invalidDate(val)`                                           | `boolean`   | Identifies invalid Date instances (`NaN` timestamp)  |
+| `why.whitespace(str)`                                            | `boolean`   | Checks if string is whitespace-only                  |
+| `why.invisible(str)`                                             | `boolean`   | Detects zero-width / invisible Unicode characters    |
+| `why.precision(num)`                                             | `number`    | Calculates decimal precision count                   |
 
 ### 6. Error & Function Debugging
 
-| Method | Return Type | Description |
-|---|---|---|
-| `why.error(err)` | `ErrorDiagnosticResult` | Structured Error inspection (frames, cause chain, properties) |
-| `why.stack(errStr)` / `why.frames(errStr)` | `StackFrameInfo[]` | Parsed stack frames list |
-| `why.rootCause(err)` | `ErrorDiagnosticResult` | Deepest root cause in cause chain |
-| `why.classify(err)` | `string` | Error classification (`Type`, `Syntax`, `Network`, `System`, `Custom`) |
-| `why.fingerprint(err)` | `string` | Hash string of error type + location |
-| `why.function(fn)` / `why.fn(fn)` | `FunctionDiagnosticResult` | Inspects function metadata without executing |
-| `why.wrap(fn)` / `why.unwrap(fn)` | `T` | Wraps function to track call counts & execution timing |
-| `why.callCount(fn)` | `number` | Returns invocation count of wrapped function |
+| Method                                     | Return Type                | Description                                                            |
+| ------------------------------------------ | -------------------------- | ---------------------------------------------------------------------- |
+| `why.error(err)`                           | `ErrorDiagnosticResult`    | Structured Error inspection (frames, cause chain, properties)          |
+| `why.stack(errStr)` / `why.frames(errStr)` | `StackFrameInfo[]`         | Parsed stack frames list                                               |
+| `why.rootCause(err)`                       | `ErrorDiagnosticResult`    | Deepest root cause in cause chain                                      |
+| `why.classify(err)`                        | `string`                   | Error classification (`Type`, `Syntax`, `Network`, `System`, `Custom`) |
+| `why.fingerprint(err)`                     | `string`                   | Hash string of error type + location                                   |
+| `why.function(fn)` / `why.fn(fn)`          | `FunctionDiagnosticResult` | Inspects function metadata without executing                           |
+| `why.wrap(fn)` / `why.unwrap(fn)`          | `T`                        | Wraps function to track call counts & execution timing                 |
+| `why.callCount(fn)`                        | `number`                   | Returns invocation count of wrapped function                           |
 
 ### 7. Performance, Memory & Process
 
-| Method | Return Type | Description |
-|---|---|---|
-| `why.process()` | `ProcessDiagnosticResult` | Process runtime metadata (PID, platform, uptime, cwd) |
-| `why.env()` | `Record<string, string>` | Environment variables with auto-redacted secret keys |
-| `why.memory()` | `MemoryResult` | Process memory usage breakdown (`heapUsed`, `heapTotal`, `rss`) |
-| `why.mark(name)` / `why.measure(name)` | `PerformanceResult` | High-resolution performance timings (`performance.now()`) |
-| `why.benchmark(fn, options)` | `PerformanceResult` | Controlled benchmark runner returning ops/sec & p50/p95/p99 |
-| `why.delay(ms)` | `Promise<void>` | Non-blocking delay promise |
-| `why.promise(p)` | `Promise<PromiseStateResult>` | Inspects Promise state (`pending`, `fulfilled`, `rejected`) |
-| `why.timeout(p, ms)` | `Promise<T>` | Wraps a promise with a safe timeout limit |
+| Method                                 | Return Type                   | Description                                                     |
+| -------------------------------------- | ----------------------------- | --------------------------------------------------------------- |
+| `why.process()`                        | `ProcessDiagnosticResult`     | Process runtime metadata (PID, platform, uptime, cwd)           |
+| `why.env()`                            | `Record<string, string>`      | Environment variables with auto-redacted secret keys            |
+| `why.memory()`                         | `MemoryResult`                | Process memory usage breakdown (`heapUsed`, `heapTotal`, `rss`) |
+| `why.mark(name)` / `why.measure(name)` | `PerformanceResult`           | High-resolution performance timings (`performance.now()`)       |
+| `why.benchmark(fn, options)`           | `PerformanceResult`           | Controlled benchmark runner returning ops/sec & p50/p95/p99     |
+| `why.delay(ms)`                        | `Promise<void>`               | Non-blocking delay promise                                      |
+| `why.promise(p)`                       | `Promise<PromiseStateResult>` | Inspects Promise state (`pending`, `fulfilled`, `rejected`)     |
+| `why.timeout(p, ms)`                   | `Promise<T>`                  | Wraps a promise with a safe timeout limit                       |
 
 ### 8. Security, Reporting & Config
 
-| Method | Return Type | Description |
-|---|---|---|
-| `why.security(val)` | `SecurityDiagnosticResult` | Scans strings & objects for secret patterns (AWS, JWT, Bearer tokens) |
-| `why.mask(str)` | `string` | Masks sensitive string values |
-| `why.redact(obj)` | `T` | Recursively redacts sensitive object keys (`password`, `apiKey`, `secret`) |
-| `why.report(val)` | `ReportResult` | Generates full diagnostic report with `toMarkdown()`, `toJSON()`, `toSARIF()` |
-| `why.configure(options)` | `DiagnosticConfig` | Central configuration manager (limits, secret patterns) |
-| `why.config()` | `DiagnosticConfig` | Returns active diagnostic configuration |
-| `why.session()` | `SessionEvent[]` | Bounded diagnostic event recording log |
+| Method                   | Return Type                | Description                                                                   |
+| ------------------------ | -------------------------- | ----------------------------------------------------------------------------- |
+| `why.security(val)`      | `SecurityDiagnosticResult` | Scans strings & objects for secret patterns (AWS, JWT, Bearer tokens)         |
+| `why.mask(str)`          | `string`                   | Masks sensitive string values                                                 |
+| `why.redact(obj)`        | `T`                        | Recursively redacts sensitive object keys (`password`, `apiKey`, `secret`)    |
+| `why.report(val)`        | `ReportResult`             | Generates full diagnostic report with `toMarkdown()`, `toJSON()`, `toSARIF()` |
+| `why.configure(options)` | `DiagnosticConfig`         | Central configuration manager (limits, secret patterns)                       |
+| `why.config()`           | `DiagnosticConfig`         | Returns active diagnostic configuration                                       |
+| `why.session()`          | `SessionEvent[]`           | Bounded diagnostic event recording log                                        |
 
 ---
 
@@ -370,4 +376,3 @@ const sarifLog = report.toSARIF();
 ## 📄 License
 
 MIT © 2026
-    

@@ -2,7 +2,10 @@
  * @fileoverview Domain engine for memory diagnostics, timing, and controlled benchmarking.
  */
 
-import type { MemoryResult, PerformanceResult } from '../models/domain-results.js';
+import type {
+  MemoryResult,
+  PerformanceResult,
+} from '../models/domain-results.js';
 
 const marks = new Map<string, number>();
 
@@ -54,7 +57,10 @@ export interface BenchmarkOptions {
 /**
  * Runs a controlled benchmark scenario and computes ops/sec and percentile timings.
  */
-export function benchmarkFn(fn: () => void, options?: BenchmarkOptions): PerformanceResult {
+export function benchmarkFn(
+  fn: () => void,
+  options?: BenchmarkOptions,
+): PerformanceResult {
   const warmup = options?.warmupIterations ?? 10;
   const iterations = options?.testIterations ?? 100;
 

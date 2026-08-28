@@ -16,7 +16,9 @@ export function generateReport(val: unknown): ReportResult {
   const inspectRes = apiInspect(val);
   const explainRes = apiExplain(val);
 
-  const findings = explainRes.findings.map((f) => `[${f.severity.toUpperCase()}] ${f.description}`);
+  const findings = explainRes.findings.map(
+    (f) => `[${f.severity.toUpperCase()}] ${f.description}`,
+  );
   const summary = explainRes.summary;
 
   return Object.freeze({
@@ -44,7 +46,8 @@ export function generateReport(val: unknown): ReportResult {
     },
     toSARIF() {
       return {
-        $schema: 'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
+        $schema:
+          'https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json',
         version: '2.1.0',
         runs: [
           {

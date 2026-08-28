@@ -35,8 +35,14 @@ describe('Diff Engine — Comprehensive Domain Tests', () => {
       const res = why.diff(a, b);
       expect(res.modified).toHaveLength(1);
       expect(res.modified[0]?.key).toBe('name');
-      expect(res.modified[0]?.oldValue).toEqual({ kind: 'primitive', value: 'Alice' });
-      expect(res.modified[0]?.newValue).toEqual({ kind: 'primitive', value: 'Bob' });
+      expect(res.modified[0]?.oldValue).toEqual({
+        kind: 'primitive',
+        value: 'Alice',
+      });
+      expect(res.modified[0]?.newValue).toEqual({
+        kind: 'primitive',
+        value: 'Bob',
+      });
     });
 
     it('handles empty objects diff', () => {
@@ -71,7 +77,10 @@ describe('Diff Engine — Comprehensive Domain Tests', () => {
     });
 
     it('why.modified filters modified entries array', () => {
-      const modifiedEntries = why.modified({ a: 1, b: 'old' }, { a: 1, b: 'new' });
+      const modifiedEntries = why.modified(
+        { a: 1, b: 'old' },
+        { a: 1, b: 'new' },
+      );
       expect(modifiedEntries).toHaveLength(1);
       expect(modifiedEntries[0]?.key).toBe('b');
     });

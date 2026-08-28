@@ -15,9 +15,12 @@ describe('Domain: Memory & Performance', () => {
   });
 
   it('why.benchmark runs controlled scenarios', () => {
-    const res = why.benchmark(() => {
-      Math.sqrt(144);
-    }, { testIterations: 50 });
+    const res = why.benchmark(
+      () => {
+        Math.sqrt(144);
+      },
+      { testIterations: 50 },
+    );
 
     expect(res.iterations).toBe(50);
     expect(res.opsPerSec).toBeGreaterThan(0);

@@ -66,7 +66,9 @@ describe('Property Engine — Comprehensive Domain Tests', () => {
       const user = { profile: null };
       const res = why.path(user, 'profile.address.city');
       expect(res.exists).toBe(false);
-      expect(res.failureReason).toContain('intermediate value is not an object');
+      expect(res.failureReason).toContain(
+        'intermediate value is not an object',
+      );
     });
 
     it('handles nonexistent key at leaf', () => {
@@ -103,8 +105,14 @@ describe('Property Engine — Comprehensive Domain Tests', () => {
 
     it('why.optional returns resolved value or default fallback', () => {
       const data = { a: { b: 'hello' } };
-      expect(why.optional(data, 'a.b', 'default')).toEqual({ value: 'hello', exists: true });
-      expect(why.optional(data, 'a.c', 'default')).toEqual({ value: 'default', exists: false });
+      expect(why.optional(data, 'a.b', 'default')).toEqual({
+        value: 'hello',
+        exists: true,
+      });
+      expect(why.optional(data, 'a.c', 'default')).toEqual({
+        value: 'default',
+        exists: false,
+      });
     });
   });
 });

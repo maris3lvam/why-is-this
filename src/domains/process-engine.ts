@@ -7,7 +7,8 @@
 import type { ProcessDiagnosticResult } from '../models/domain-results.js';
 import { globalConfig } from '../core/config.js';
 
-const SENSITIVE_KEY_PATTERN = /(?:secret|password|passwd|key|token|auth|cookie|private)/i;
+const SENSITIVE_KEY_PATTERN =
+  /(?:secret|password|passwd|key|token|auth|cookie|private)/i;
 
 /**
  * Returns redacted environment variables.

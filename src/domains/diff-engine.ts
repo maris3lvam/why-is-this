@@ -10,7 +10,11 @@ import type {
   ModifiedEntryInfo,
   ReferenceRelationshipResult,
 } from '../models/domain-results.js';
-import { safeReadKeys, safeReadValue, valueToSafeValue } from '../core/safe-reader.js';
+import {
+  safeReadKeys,
+  safeReadValue,
+  valueToSafeValue,
+} from '../core/safe-reader.js';
 import { DEFAULT_LIMITS } from '../core/limits.js';
 import { deepEqual, same } from './equality-engine.js';
 import { isObjectLike } from '../core/type-detector.js';
@@ -83,7 +87,8 @@ export function diff(a: unknown, b: unknown): DiffResult {
     }
   }
 
-  const isIdentical = removed.length === 0 && added.length === 0 && modified.length === 0;
+  const isIdentical =
+    removed.length === 0 && added.length === 0 && modified.length === 0;
 
   return Object.freeze({
     timestamp,
@@ -117,7 +122,10 @@ export function unchanged(a: unknown, b: unknown): boolean {
   return diff(a, b).isIdentical;
 }
 
-export function referenceRelationship(a: unknown, b: unknown): ReferenceRelationshipResult {
+export function referenceRelationship(
+  a: unknown,
+  b: unknown,
+): ReferenceRelationshipResult {
   const timestamp = Date.now();
   if (same(a, b)) {
     return Object.freeze({

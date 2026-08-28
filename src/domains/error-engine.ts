@@ -4,14 +4,19 @@
  * Safe against circular cause chains. Parses standard Node.js V8 stack traces.
  */
 
-import type { ErrorDiagnosticResult, StackFrameInfo } from '../models/domain-results.js';
+import type {
+  ErrorDiagnosticResult,
+  StackFrameInfo,
+} from '../models/domain-results.js';
 import { safeReadKeys, safeReadValue } from '../core/safe-reader.js';
 import { DEFAULT_LIMITS } from '../core/limits.js';
 
 /**
  * Parses a V8 stack trace string into structured StackFrameInfo items.
  */
-export function parseStackFrames(stackStr: string | undefined): StackFrameInfo[] {
+export function parseStackFrames(
+  stackStr: string | undefined,
+): StackFrameInfo[] {
   if (!stackStr || typeof stackStr !== 'string') return [];
 
   const lines = stackStr.split('\n');
@@ -29,7 +34,8 @@ export function parseStackFrames(stackStr: string | undefined): StackFrameInfo[]
         fileName: matchWithFn[2]!,
         lineNumber: parseInt(matchWithFn[3]!, 10),
         columnNumber: parseInt(matchWithFn[4]!, 10),
-        isNative: matchWithFn[2] === 'native' || matchWithFn[2]!.includes('node:'),
+        isNative:
+          matchWithFn[2] === 'native' || matchWithFn[2]!.includes('node:'),
       });
       continue;
     }
@@ -52,28 +58,44 @@ export function parseStackFrames(stackStr: string | undefined): StackFrameInfo[]
 /**
  * Classifies error category based on error type name and inheritance.
  */
-export function classifyError(err: Error): 'Type' | 'Syntax' | 'Network' | 'System' | 'Custom' {
+export function classifyError(
+  err: Error,
+): 'Type' | 'Syntax' | 'Network' | 'System' | 'Custom' {
   const name = err.name || 'Error';
   if (name.includes('Type')) return 'Type';
   if (name.includes('Syntax')) return 'Syntax';
-  if (name.includes('Network') || name.includes('Fetch') || name.includes('HTTP')) return 'Network';
-  if (name.includes('System') || name.includes('SystemError') || 'code' in err) return 'System';
+  if (
+    name.includes('Network') ||
+    name.includes('Fetch') ||
+    name.includes('HTTP')
+  )
+    return 'Network';
+  if (name.includes('System') || name.includes('SystemError') || 'code' in err)
+    return 'System';
   return 'Custom';
 }
 
 /**
  * Computes a deterministic fingerprint string for an Error.
  */
-export function fingerprintError(err: Error, topFrame?: StackFrameInfo): string {
+export function fingerprintError(
+  err: Error,
+  topFrame?: StackFrameInfo,
+): string {
   const name = err.name || 'Error';
-  const loc = topFrame ? `${topFrame.fileName}:${topFrame.lineNumber}` : 'unknown';
+  const loc = topFrame
+    ? `${topFrame.fileName}:${topFrame.lineNumber}`
+    : 'unknown';
   return `${name}:${loc}:${err.message.slice(0, 30)}`;
 }
 
 /**
  * Performs complete, safe inspection of an Error object.
  */
-export function inspectError(err: unknown, seen = new Set<object>()): ErrorDiagnosticResult {
+export function inspectError(
+  err: unknown,
+  seen = new Set<object>(),
+): ErrorDiagnosticResult {
   const timestamp = Date.now();
 
   if (!(err instanceof Error)) {
@@ -81,7 +103,10 @@ export function inspectError(err: unknown, seen = new Set<object>()): ErrorDiagn
       timestamp,
       domain: 'error',
       success: false,
-      name: typeof err === 'object' && err !== null ? (err as object).constructor.name : typeof err,
+      name:
+        typeof err === 'object' && err !== null
+          ? (err as object).constructor.name
+          : typeof err,
       message: String(err),
       stackFrames: [],
       causeChain: [],
@@ -120,7 +145,13 @@ export function inspectError(err: unknown, seen = new Set<object>()): ErrorDiagn
   // Custom properties (excluding standard name, message, stack, cause)
   const { keys } = safeReadKeys(err, 'root', DEFAULT_LIMITS);
   const customProps = keys
-    .filter((k) => k.key !== 'name' && k.key !== 'message' && k.key !== 'stack' && k.key !== 'cause')
+    .filter(
+      (k) =>
+        k.key !== 'name' &&
+        k.key !== 'message' &&
+        k.key !== 'stack' &&
+        k.key !== 'cause',
+    )
     .map((k) => ({
       key: k.key,
       value: safeReadValue(err, k.key, `root.${String(k.key)}`, []),

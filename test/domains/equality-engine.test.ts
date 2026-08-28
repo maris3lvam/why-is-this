@@ -4,36 +4,56 @@ import { WhyAssertionError } from '../../src/domains/equality-engine.js';
 
 describe('Equality Engine — Comprehensive Domain Tests', () => {
   describe('why.is()', () => {
-    it('matches string primitives', () => expect(why.is('hello', 'string')).toBe(true));
-    it('matches number primitives', () => expect(why.is(42, 'number')).toBe(true));
-    it('matches bigint primitives', () => expect(why.is(100n, 'bigint')).toBe(true));
-    it('matches boolean primitives', () => expect(why.is(true, 'boolean')).toBe(true));
-    it('matches symbol primitives', () => expect(why.is(Symbol('x'), 'symbol')).toBe(true));
+    it('matches string primitives', () =>
+      expect(why.is('hello', 'string')).toBe(true));
+    it('matches number primitives', () =>
+      expect(why.is(42, 'number')).toBe(true));
+    it('matches bigint primitives', () =>
+      expect(why.is(100n, 'bigint')).toBe(true));
+    it('matches boolean primitives', () =>
+      expect(why.is(true, 'boolean')).toBe(true));
+    it('matches symbol primitives', () =>
+      expect(why.is(Symbol('x'), 'symbol')).toBe(true));
     it('matches null', () => expect(why.is(null, 'null')).toBe(true));
-    it('matches undefined', () => expect(why.is(undefined, 'undefined')).toBe(true));
+    it('matches undefined', () =>
+      expect(why.is(undefined, 'undefined')).toBe(true));
     it('matches array', () => expect(why.is([1, 2], 'array')).toBe(true));
     it('matches plain object', () => expect(why.is({}, 'object')).toBe(true));
-    it('matches Map collection', () => expect(why.is(new Map(), 'map')).toBe(true));
-    it('matches Set collection', () => expect(why.is(new Set(), 'set')).toBe(true));
-    it('matches Date object', () => expect(why.is(new Date(), 'date')).toBe(true));
-    it('matches RegExp object', () => expect(why.is(/abc/, 'regexp')).toBe(true));
-    it('matches Error object', () => expect(why.is(new Error(), 'error')).toBe(true));
-    it('matches Buffer', () => expect(why.is(Buffer.from('hi'), 'buffer')).toBe(true));
-    it('matches constructor Date', () => expect(why.is(new Date(), Date)).toBe(true));
-    it('matches constructor RegExp', () => expect(why.is(/test/, RegExp)).toBe(true));
-    it('matches constructor Error', () => expect(why.is(new Error(), Error)).toBe(true));
+    it('matches Map collection', () =>
+      expect(why.is(new Map(), 'map')).toBe(true));
+    it('matches Set collection', () =>
+      expect(why.is(new Set(), 'set')).toBe(true));
+    it('matches Date object', () =>
+      expect(why.is(new Date(), 'date')).toBe(true));
+    it('matches RegExp object', () =>
+      expect(why.is(/abc/, 'regexp')).toBe(true));
+    it('matches Error object', () =>
+      expect(why.is(new Error(), 'error')).toBe(true));
+    it('matches Buffer', () =>
+      expect(why.is(Buffer.from('hi'), 'buffer')).toBe(true));
+    it('matches constructor Date', () =>
+      expect(why.is(new Date(), Date)).toBe(true));
+    it('matches constructor RegExp', () =>
+      expect(why.is(/test/, RegExp)).toBe(true));
+    it('matches constructor Error', () =>
+      expect(why.is(new Error(), Error)).toBe(true));
     it('matches custom class constructor', () => {
       class CustomClass {}
       expect(why.is(new CustomClass(), CustomClass)).toBe(true);
     });
-    it('returns false on mismatched type string', () => expect(why.is('hello', 'number')).toBe(false));
-    it('returns false on mismatched constructor', () => expect(why.is({}, Date)).toBe(false));
-    it('returns false for primitive against object constructor', () => expect(why.is(42, Object)).toBe(false));
+    it('returns false on mismatched type string', () =>
+      expect(why.is('hello', 'number')).toBe(false));
+    it('returns false on mismatched constructor', () =>
+      expect(why.is({}, Date)).toBe(false));
+    it('returns false for primitive against object constructor', () =>
+      expect(why.is(42, Object)).toBe(false));
   });
 
   describe('why.same(), why.strictEqual(), why.equal()', () => {
-    it('why.same respects Object.is NaN equality', () => expect(why.same(NaN, NaN)).toBe(true));
-    it('why.same respects Object.is signed zero distinction', () => expect(why.same(+0, -0)).toBe(false));
+    it('why.same respects Object.is NaN equality', () =>
+      expect(why.same(NaN, NaN)).toBe(true));
+    it('why.same respects Object.is signed zero distinction', () =>
+      expect(why.same(+0, -0)).toBe(false));
     it('why.same checks object identity', () => {
       const obj = { a: 1 };
       expect(why.same(obj, obj)).toBe(true);
@@ -75,15 +95,23 @@ describe('Equality Engine — Comprehensive Domain Tests', () => {
     });
 
     it('compares Date and RegExp objects', () => {
-      expect(why.deepEqual(new Date('2024-01-01'), new Date('2024-01-01'))).toBe(true);
-      expect(why.deepEqual(new Date('2024-01-01'), new Date('2025-01-01'))).toBe(false);
+      expect(
+        why.deepEqual(new Date('2024-01-01'), new Date('2024-01-01')),
+      ).toBe(true);
+      expect(
+        why.deepEqual(new Date('2024-01-01'), new Date('2025-01-01')),
+      ).toBe(false);
       expect(why.deepEqual(/abc/i, /abc/i)).toBe(true);
       expect(why.deepEqual(/abc/i, /abc/g)).toBe(false);
     });
 
     it('compares Maps and Sets', () => {
-      expect(why.deepEqual(new Map([['a', 1]]), new Map([['a', 1]]))).toBe(true);
-      expect(why.deepEqual(new Map([['a', 1]]), new Map([['a', 2]]))).toBe(false);
+      expect(why.deepEqual(new Map([['a', 1]]), new Map([['a', 1]]))).toBe(
+        true,
+      );
+      expect(why.deepEqual(new Map([['a', 1]]), new Map([['a', 2]]))).toBe(
+        false,
+      );
       expect(why.deepEqual(new Set([1, 2]), new Set([1, 2]))).toBe(true);
       expect(why.deepEqual(new Set([1, 2]), new Set([1, 3]))).toBe(false);
     });

@@ -9,7 +9,10 @@ import { detectType, isObjectLike } from '../core/type-detector.js';
 /**
  * Checks if a value can be JSON stringified safely without throwing.
  */
-export function isSerializable(val: unknown, seen = new Set<object>()): boolean {
+export function isSerializable(
+  val: unknown,
+  seen = new Set<object>(),
+): boolean {
   if (val === undefined || val === null) return true;
   const t = typeof val;
   if (t === 'boolean' || t === 'number' || t === 'string') return true;
@@ -42,8 +45,10 @@ export function stringifyCircular(val: unknown, indent = 2): string {
     val,
     (_key, value) => {
       if (typeof value === 'bigint') return `${value.toString()}n`;
-      if (typeof value === 'symbol') return `[Symbol: ${value.description ?? ''}]`;
-      if (typeof value === 'function') return `[Function: ${value.name || 'anonymous'}]`;
+      if (typeof value === 'symbol')
+        return `[Symbol: ${value.description ?? ''}]`;
+      if (typeof value === 'function')
+        return `[Function: ${value.name || 'anonymous'}]`;
 
       if (isObjectLike(value)) {
         const obj = value as object;

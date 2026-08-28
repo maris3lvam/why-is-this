@@ -22,7 +22,8 @@ export function isWhitespace(str: unknown): boolean {
 export function hasInvisibleChars(str: unknown): boolean {
   if (typeof str !== 'string') return false;
   // Regex for zero-width space, zero-width non-joiner, soft hyphen, BOM, control chars
-  const invisiblePattern = /[\u200B-\u200D\uFEFF\u00AD\u0000-\u001F\u007F-\u009F]/;
+  const invisiblePattern =
+    /[\u200B-\u200D\uFEFF\u00AD\u0000-\u001F\u007F-\u009F]/;
   return invisiblePattern.test(str);
 }
 

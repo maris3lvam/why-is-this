@@ -29,11 +29,16 @@ export interface DiagnosticConfig {
   readonly maxSessionEvents: number;
 }
 
-export const DEFAULT_SECURITY_PATTERNS: readonly SecretPattern[] = Object.freeze([
-  { name: 'AWS Access Key', pattern: /AKIA[0-9A-Z]{16}/ },
-  { name: 'Bearer / JWT Token', pattern: /bearer\s+[a-zA-Z0-9._~+/]+=*/i },
-  { name: 'Generic Secret Key', pattern: /(?:secret|password|passwd|apiKey|token|authorization|cookie|set-cookie)\s*[:=]\s*\S+/i },
-]);
+export const DEFAULT_SECURITY_PATTERNS: readonly SecretPattern[] =
+  Object.freeze([
+    { name: 'AWS Access Key', pattern: /AKIA[0-9A-Z]{16}/ },
+    { name: 'Bearer / JWT Token', pattern: /bearer\s+[a-zA-Z0-9._~+/]+=*/i },
+    {
+      name: 'Generic Secret Key',
+      pattern:
+        /(?:secret|password|passwd|apiKey|token|authorization|cookie|set-cookie)\s*[:=]\s*\S+/i,
+    },
+  ]);
 
 export const DEFAULT_CONFIG: Readonly<DiagnosticConfig> = Object.freeze({
   limits: DEFAULT_LIMITS,
@@ -54,17 +59,24 @@ class ConfigManager {
 
   public configure(overrides: Partial<DiagnosticConfig>): DiagnosticConfig {
     this.currentConfig = Object.freeze({
-      limits: overrides.limits ? mergeLimits(overrides.limits) : this.currentConfig.limits,
+      limits: overrides.limits
+        ? mergeLimits(overrides.limits)
+        : this.currentConfig.limits,
       security: overrides.security
         ? Object.freeze({
-            autoRedact: overrides.security.autoRedact ?? this.currentConfig.security.autoRedact,
+            autoRedact:
+              overrides.security.autoRedact ??
+              this.currentConfig.security.autoRedact,
             secretPatterns: overrides.security.secretPatterns
               ? Object.freeze([...overrides.security.secretPatterns])
               : this.currentConfig.security.secretPatterns,
-            maskString: overrides.security.maskString ?? this.currentConfig.security.maskString,
+            maskString:
+              overrides.security.maskString ??
+              this.currentConfig.security.maskString,
           })
         : this.currentConfig.security,
-      maxSessionEvents: overrides.maxSessionEvents ?? this.currentConfig.maxSessionEvents,
+      maxSessionEvents:
+        overrides.maxSessionEvents ?? this.currentConfig.maxSessionEvents,
     });
     return this.currentConfig;
   }

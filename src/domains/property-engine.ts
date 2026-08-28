@@ -48,7 +48,10 @@ export function getProp(obj: unknown, key: string | symbol): SafeValue {
 /**
  * Safely resolves a nested property path (e.g. "a.b.c") without getter execution.
  */
-export function resolvePath(target: unknown, pathStr: string): PropertyPathResult {
+export function resolvePath(
+  target: unknown,
+  pathStr: string,
+): PropertyPathResult {
   const timestamp = Date.now();
   if (!pathStr || typeof pathStr !== 'string') {
     return Object.freeze({
@@ -62,7 +65,10 @@ export function resolvePath(target: unknown, pathStr: string): PropertyPathResul
     });
   }
 
-  const segments = pathStr.split('.').map((s) => s.trim()).filter(Boolean);
+  const segments = pathStr
+    .split('.')
+    .map((s) => s.trim())
+    .filter(Boolean);
   let current: unknown = target;
 
   for (let i = 0; i < segments.length; i++) {
@@ -92,7 +98,12 @@ export function resolvePath(target: unknown, pathStr: string): PropertyPathResul
       });
     }
 
-    const safeVal = safeReadValue(obj, seg, segments.slice(0, i + 1).join('.'), []);
+    const safeVal = safeReadValue(
+      obj,
+      seg,
+      segments.slice(0, i + 1).join('.'),
+      [],
+    );
     if (safeVal.kind === 'accessor') {
       return Object.freeze({
         timestamp,
@@ -135,11 +146,18 @@ export function existsPath(target: unknown, pathStr: string): boolean {
   return resolvePath(target, pathStr).exists;
 }
 
-export function missingPath(target: unknown, pathStr: string): string | undefined {
+export function missingPath(
+  target: unknown,
+  pathStr: string,
+): string | undefined {
   return resolvePath(target, pathStr).failureReason;
 }
 
-export function optionalPath(target: unknown, pathStr: string, defaultValue?: unknown): { value: unknown; exists: boolean } {
+export function optionalPath(
+  target: unknown,
+  pathStr: string,
+  defaultValue?: unknown,
+): { value: unknown; exists: boolean } {
   const res = resolvePath(target, pathStr);
   if (res.exists && res.value.kind === 'primitive') {
     return { value: res.value.value ?? defaultValue, exists: true };

@@ -17,7 +17,9 @@ export function delayMs(ms: number): Promise<void> {
 /**
  * Inspects a Promise state safely using Promise.race with a sentinel value.
  */
-export async function inspectPromiseState(p: unknown): Promise<PromiseStateResult> {
+export async function inspectPromiseState(
+  p: unknown,
+): Promise<PromiseStateResult> {
   const timestamp = Date.now();
 
   if (!(p instanceof Promise)) {
@@ -61,11 +63,17 @@ export async function inspectPromiseState(p: unknown): Promise<PromiseStateResul
 /**
  * Wraps a promise with a safe timeout limit.
  */
-export function withTimeout<T>(promise: Promise<T>, ms: number, timeoutMsg = 'Operation timed out'): Promise<T> {
+export function withTimeout<T>(
+  promise: Promise<T>,
+  ms: number,
+  timeoutMsg = 'Operation timed out',
+): Promise<T> {
   let timer: NodeJS.Timeout;
   const timeoutPromise = new Promise<never>((_, reject) => {
     timer = setTimeout(() => reject(new Error(timeoutMsg)), ms);
   });
 
-  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timer));
+  return Promise.race([promise, timeoutPromise]).finally(() =>
+    clearTimeout(timer),
+  );
 }
