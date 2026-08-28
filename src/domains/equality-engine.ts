@@ -5,6 +5,9 @@
  * Never executes getters during deep equality checks.
  */
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unsafe-function-type */
+
 import type {
   ExpectResult,
   ValidationResult,
@@ -18,19 +21,24 @@ export class WhyAssertionError extends Error {
   }
 }
 
+export type ConstructorType =
+  | (new (...args: any[]) => any)
+  | (abstract new (...args: any[]) => any)
+  | Function;
+
 /**
  * Checks if a value matches an expected type name or constructor function.
  */
 export function is(
   value: unknown,
-  expected: string | (new (...args: unknown[]) => unknown),
+  expected: string | ConstructorType,
 ): boolean {
   if (typeof expected === 'string') {
     return detectType(value) === expected.toLowerCase();
   }
   if (typeof expected === 'function') {
     try {
-      return value instanceof expected;
+      return value instanceof (expected as new (...args: any[]) => any);
     } catch {
       return false;
     }
