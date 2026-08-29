@@ -64,12 +64,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/maris3lvam/why-is-this.git"
+    "url": "git+https://github.com/thedebuglab/why-is-this.git"
   },
   "bugs": {
-    "url": "https://github.com/maris3lvam/why-is-this/issues"
+    "url": "https://github.com/thedebuglab/why-is-this/issues"
   },
-  "homepage": "https://github.com/maris3lvam/why-is-this#readme",
+  "homepage": "https://github.com/thedebuglab/why-is-this#readme",
   "publishConfig": {
     "access": "public"
   }

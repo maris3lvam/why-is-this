@@ -55,7 +55,7 @@ export function generateReport(val: unknown): ReportResult {
               driver: {
                 name: 'why-is-this',
                 version: '0.1.0',
-                informationUri: 'https://github.com/debuglab/why-is-this',
+                informationUri: 'https://github.com/thedebuglab/why-is-this',
               },
             },
             results: explainRes.findings.map((f) => ({
