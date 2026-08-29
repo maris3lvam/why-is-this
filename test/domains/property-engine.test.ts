@@ -86,7 +86,11 @@ describe('Property Engine — Comprehensive Domain Tests', () => {
 
     it('why.resolve is alias of why.path', () => {
       const user = { a: { b: 42 } };
-      expect(why.resolve(user, 'a.b')).toEqual(why.path(user, 'a.b'));
+      const res1 = why.resolve(user, 'a.b');
+      const res2 = why.path(user, 'a.b');
+      expect(res1.value).toEqual(res2.value);
+      expect(res1.exists).toBe(res2.exists);
+      expect(res1.path).toBe(res2.path);
     });
   });
 
