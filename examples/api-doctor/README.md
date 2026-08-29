@@ -247,3 +247,13 @@ curl -s -H "Authorization: Bearer my_secret_token_12345" \
 ## Teardown & Clean Exit
 
 Press `Ctrl+C` in any terminal to cleanly stop the server or CLI dashboard. All buffers and loopback IPC sockets are automatically released.
+
+---
+
+## 🤝 Collaboration & Community
+
+Have questions or feedback? Join our community:
+
+- 💬 **Telegram Group**: [t.me/thedebuglab](https://t.me/thedebuglab)
+- 🐛 **Issue Tracker**: [GitHub Issues](https://github.com/thedebuglab/why-is-this/issues)
+
