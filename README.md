@@ -36,7 +36,7 @@ _Answer the core question: **What is this value, what is unusual about it, and w
   - [8. Markdown & SARIF Report Generation](#8-markdown--sarif-report-generation)
 - [Complete API Reference](#-complete-api-reference)
 - [Security & Design Invariants](#-security--design-invariants)
-- [Community & Support](#-community--support)
+- [Collaboration & Contributing Guide](#-collaboration--contributing-guide)
 - [License](#-license)
 
 ---
@@ -375,11 +375,72 @@ const sarifLog = report.toSARIF();
 
 ---
 
-## 💬 Community & Support
+## 🤝 Collaboration & Contributing Guide
 
-Have questions, suggestions, or need help? Join the official Telegram group:
+We welcome contributions, bug fixes, feature proposals, and community feedback!
+
+### 💬 Community & Discussion
+
+Join the official Telegram group to chat with maintainers, ask questions, or discuss new diagnostic features:
 
 👉 **[t.me/thedebuglab](https://t.me/thedebuglab)**
+
+---
+
+### 🚀 Feature Branch & Development Workflow
+
+Follow these steps to contribute code to `@debuglab/why-is-this`:
+
+#### 1. Fork & Clone Repository
+
+```bash
+git clone https://github.com/thedebuglab/why-is-this.git
+cd why-is-this
+npm install
+```
+
+#### 2. Create a Dedicated Branch
+
+Always create a descriptive branch off `main` following standard naming conventions:
+
+```bash
+# For new features
+git checkout -b feature/your-feature-name
+
+# For bug fixes
+git checkout -b fix/your-bugfix-description
+
+# For documentation updates
+git checkout -b docs/your-doc-update
+```
+
+#### 3. Local Development & Verification
+
+Make your code changes and run local verification before committing:
+
+```bash
+# 1. Typecheck TypeScript sources
+npm run typecheck
+
+# 2. Run full unit test suite (vitest)
+npm test
+
+# 3. Check code linting
+npm run lint
+```
+
+#### 4. Commit Changes
+
+Use clear, conventional commit messages (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`):
+
+```bash
+git add .
+git commit -m "feat: add descriptive feature summary"
+```
+
+#### 5. Submit a Pull Request
+
+Push your branch to GitHub and open a Pull Request against `main` on [GitHub Pull Requests](https://github.com/thedebuglab/why-is-this/pulls).
 
 ---
 
