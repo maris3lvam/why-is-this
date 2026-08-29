@@ -1,6 +1,6 @@
 {
   "name": "@debuglab/why-is-this",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Developer-focused diagnostic toolkit for runtime JavaScript value inspection",
   "type": "module",
   "engines": {
