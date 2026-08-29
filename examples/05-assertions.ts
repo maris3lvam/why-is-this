@@ -21,7 +21,7 @@ console.log('All passing assertions: OK');
 
 // Failing assertion — throws WhyAssertionError with the message
 try {
-  const responseCode = 500;
+  const responseCode: number = 500;
   why.assert(responseCode === 200, `Expected HTTP 200, got ${responseCode}`);
 } catch (e) {
   console.log('Caught assertion error:', (e as Error).message);

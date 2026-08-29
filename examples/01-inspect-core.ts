@@ -28,7 +28,7 @@ const obj = { name: 'Alice', age: 30, role: 'admin' };
 const inspected = why.inspect(obj);
 
 console.log('type:', inspected.type); // → 'object'
-console.log('propertyCount:', inspected.propertyCount); // → 3
+console.log('propertyCount:', inspected.keys.length); // → 3
 console.log('depth:', inspected.depth); // → 1
 
 // ─── Section 3: why.explain() — Structural Findings ─────────────────────────

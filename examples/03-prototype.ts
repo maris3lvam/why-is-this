@@ -28,7 +28,7 @@ class Dog extends Animal {
     super();
     this.name = name;
   }
-  speak() {
+  override speak() {
     return 'woof';
   }
 }

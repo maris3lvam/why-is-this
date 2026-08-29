@@ -165,7 +165,7 @@ function whyBase(value: unknown): InspectionResult {
   return inspectEngine(value);
 }
 
-const why = whyBase as WhyFunction;
+const why: WhyFunction = whyBase as WhyFunction;
 
 // ── Core Inspection APIs ─────────────────────────────────────────────────────
 why.inspect = apiInspect;

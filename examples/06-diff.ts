@@ -48,7 +48,7 @@ console.log(
   'modified:',
   result.modified.map(
     (e) =>
-      `${String(e.key)}: ${JSON.stringify(e.oldValue.value)} → ${JSON.stringify(e.newValue.value)}`,
+      `${String(e.key)}: ${e.oldValue.kind === 'primitive' ? JSON.stringify(e.oldValue.value) : ''} → ${e.newValue.kind === 'primitive' ? JSON.stringify(e.newValue.value) : ''}`,
   ),
 );
 // → ['email: "alice@example.com" → "alice@new.com"', 'theme: "light" → "dark"']

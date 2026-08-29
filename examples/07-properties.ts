@@ -46,13 +46,13 @@ const response = {
 };
 
 // why.undefined checks if a property VALUE is undefined (key may still exist)
-console.log(why.undefined(response, 'error')); // → true   (value is undefined)
-console.log(why.undefined(response, 'data')); // → false  (value is null, not undefined)
-console.log(why.undefined(response, 'count')); // → false  (value is 0)
+console.log(why.undefined(response.error)); // → true   (value is undefined)
+console.log(why.undefined(response.data)); // → false  (value is null, not undefined)
+console.log(why.undefined(response.count)); // → false  (value is 0)
 
 // why.null checks if a property VALUE is null
-console.log(why.null(response, 'data')); // → true   (value is null)
-console.log(why.null(response, 'error')); // → false  (value is undefined, not null)
+console.log(why.null(response.data)); // → true   (value is null)
+console.log(why.null(response.error)); // → false  (value is undefined, not null)
 
 // ─── Section 3: why.get() — Getter-Safe Property Read ────────────────────────
 
@@ -80,7 +80,10 @@ console.log('status kind:', statusVal.kind); // → 'accessor'  (getter detected
 // Private property stored on instance (via convention)
 const keyVal = why.get(service, '_apiKey');
 console.log('_apiKey kind:', keyVal.kind); // → 'primitive'
-console.log('_apiKey value:', keyVal.value); // → 'sk-prod-abc123'
+console.log(
+  '_apiKey value:',
+  keyVal.kind === 'primitive' ? keyVal.value : undefined,
+); // → 'sk-prod-abc123'
 
 // ─── Section 4: why.exists() — Deep Path Existence ───────────────────────────
 

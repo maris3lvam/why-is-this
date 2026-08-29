@@ -43,7 +43,7 @@ console.log('\n─── 2. why.same() — Object.is() Strict Identity ───
 
 // NaN trap: NaN !== NaN in standard JS
 console.log(why.same(NaN, NaN)); // → true   (Object.is handles this correctly)
-console.log(NaN === NaN); // → false  (standard === is broken for NaN)
+console.log((NaN as number) === (NaN as number)); // → false  (standard === is broken for NaN)
 
 // Signed zero trap: -0 and +0 are === but not same
 console.log(why.same(0, -0)); // → false  (Object.is distinguishes them)

@@ -18,7 +18,7 @@ const defaultConfig = why.config();
 // Inspection limits control how deep/wide the engine traverses
 console.log('maxDepth:', defaultConfig.limits.maxDepth); // → 10
 console.log('maxProperties:', defaultConfig.limits.maxProperties); // → 100
-console.log('maxArrayLength:', defaultConfig.limits.maxArrayLength); // → 50
+console.log('maxCollectionEntries:', defaultConfig.limits.maxCollectionEntries); // → 100
 console.log('maxSessionEvents:', defaultConfig.maxSessionEvents); // → 1000
 
 // Security defaults
@@ -35,7 +35,7 @@ console.log('\n─── 2. why.configure() — Customise Behaviour ───');
 
 // Override depth limit for a single deep analysis session
 why.configure({
-  limits: { maxDepth: 20 }, // increase depth limit
+  limits: { ...defaultConfig.limits, maxDepth: 20 }, // increase depth limit
   maxSessionEvents: 500, // reduce session event buffer
 });
 
@@ -46,6 +46,7 @@ console.log('updated maxSessionEvents:', updated.maxSessionEvents); // → 500
 // Add a custom secret pattern — e.g., for internal API key format
 why.configure({
   security: {
+    ...defaultConfig.security,
     secretPatterns: [
       ...defaultConfig.security.secretPatterns,
       { name: 'Internal Service Key', pattern: /INT-KEY-[A-Z0-9]{20}/ },
@@ -114,7 +115,10 @@ console.log('JSON findings:', parsed.findings);
 
 console.log('\n─── 3c. report.toSARIF() — SARIF v2.1.0 Format ───');
 
-const sarif = report.toSARIF();
+const sarif = report.toSARIF() as {
+  version: string;
+  runs: Array<{ tool: { driver: { name: string } }; results: unknown[] }>;
+};
 console.log('SARIF version:', sarif.version); // → '2.1.0'
 console.log('tool name:', sarif.runs[0]?.tool.driver.name); // → 'why-is-this'
 console.log('SARIF results:', sarif.runs[0]?.results.length); // → number of findings
