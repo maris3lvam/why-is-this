@@ -10,6 +10,7 @@
 [![license](https://img.shields.io/npm/l/@debuglab/why-is-this.svg?style=flat-square&color=green)](https://opensource.org/licenses/MIT)
 [![node version](https://img.shields.io/node/v/@debuglab/why-is-this.svg?style=flat-square)](https://nodejs.org)
 [![types](https://img.shields.io/badge/types-TypeScript-blue.svg?style=flat-square)](https://www.typescriptlang.org)
+[![telegram](https://img.shields.io/badge/Telegram-Group-blue.svg?style=flat-square&logo=telegram)](https://t.me/thedebuglab)
 [![build status](https://img.shields.io/badge/build-passing-brightgreen.svg?style=flat-square)](#)
 
 _Answer the core question: **What is this value, what is unusual about it, and why might it be behaving this way?**_
@@ -35,6 +36,7 @@ _Answer the core question: **What is this value, what is unusual about it, and w
   - [8. Markdown & SARIF Report Generation](#8-markdown--sarif-report-generation)
 - [Complete API Reference](#-complete-api-reference)
 - [Security & Design Invariants](#-security--design-invariants)
+- [Community & Support](#-community--support)
 - [License](#-license)
 
 ---
@@ -370,6 +372,14 @@ const sarifLog = report.toSARIF();
 2. **Offline & Zero Telemetry**: Local-only processing. No network calls, remote logging, or hidden HTTP traffic.
 3. **No Unbounded Memory**: Iterative DFS graph traversal uses bounded limit caps (`maxDepth: 10`, `maxProperties: 200`, `maxSessionEvents: 1000`).
 4. **No Unexpected Throwing**: Diagnostic inspection methods catch internal proxy/accessor errors gracefully and record non-fatal errors in `result.errors`.
+
+---
+
+## 💬 Community & Support
+
+Have questions, suggestions, or need help? Join the official Telegram group:
+
+👉 **[t.me/thedebuglab](https://t.me/thedebuglab)**
 
 ---
 
