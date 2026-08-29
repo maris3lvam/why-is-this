@@ -1,0 +1,26 @@
+{
+  "name": "example-api-doctor",
+  "version": "0.3.0",
+  "description": "Official reference application for @debuglab/why-is-this API Doctor monitoring",
+  "private": true,
+  "type": "module",
+  "main": "src/server.ts",
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "dev": "tsx src/server.ts",
+    "demo": "tsx src/demo-traffic.ts"
+  },
+  "dependencies": {
+    "@debuglab/why-is-this": "file:../.."
+  },
+  "devDependencies": {
+    "tsx": "^4.0.0"
+  },
+  "keywords": [
+    "api-doctor",
+    "why-is-this",
+    "diagnostics",
+    "example"
+  ],
+  "license": "MIT"
+}

@@ -15,6 +15,10 @@
 
 export { why } from './api/why.js';
 export { why as default } from './api/why.js';
+export {
+  getDashboardHtml,
+  getSinglePageUI,
+} from './api-doctor/dashboard/single-page-ui.js';
 
 // ─── Public type exports ────────────────────────────────────────────────────
 export type { WhyFunction } from './api/why.js';
@@ -60,3 +64,18 @@ export type {
 
 export type { InspectionLimits } from './core/limits.js';
 export type { DiagnosticConfig, SecurityConfig } from './core/config.js';
+
+// ─── API Doctor public types ─────────────────────────────────────────────────
+export type { ApiDoctorHandle } from './api/api-doctor-facade.js';
+export type {
+  ApiDoctorOptions,
+  StorageOptions,
+  RequestRecord,
+  EndpointStats,
+  LatencyPercentiles,
+  DiagnosticFinding,
+  DiagnosticSnapshot,
+  HealthOverview,
+  FindingSeverity,
+  FindingKind,
+} from './api-doctor/types.js';

@@ -43,6 +43,9 @@ import * as SecurityDomain from '../domains/security-engine.js';
 import * as ReportDomain from '../domains/reporting-engine.js';
 import { sessionManager } from '../domains/session-engine.js';
 import { globalConfig } from '../core/config.js';
+import { apiNamespace, type ApiDoctorHandle } from './api-doctor-facade.js';
+import type { ApiDoctorOptions } from '../api-doctor/types.js';
+import type { SupportedApp } from '../api-doctor/collector/http-sniffer.js';
 
 export interface WhyFunction {
   /** Inspect any value. Returns InspectionResult — no side effects. */
@@ -159,6 +162,19 @@ export interface WhyFunction {
   session: typeof sessionManager.getEvents;
   configure: typeof globalConfig.configure;
   config: typeof globalConfig.get;
+
+  // ── API Doctor ─────────────────────────────────────────────────────────────
+  api: {
+    /** Attach API Doctor monitoring to a running HTTP server or Express app.
+     *
+     * @example
+     * ```ts
+     * why.api.doctor(app);
+     * // In another terminal: npx api-doctor
+     * ```
+     */
+    doctor: (app: SupportedApp, options?: ApiDoctorOptions) => ApiDoctorHandle;
+  };
 }
 
 function whyBase(value: unknown): InspectionResult {
@@ -278,5 +294,8 @@ why.report = ReportDomain.generateReport;
 why.session = sessionManager.getEvents.bind(sessionManager);
 why.configure = globalConfig.configure.bind(globalConfig);
 why.config = globalConfig.get.bind(globalConfig);
+
+// ── API Doctor ────────────────────────────────────────────────────────────────
+why.api = apiNamespace;
 
 export { why };

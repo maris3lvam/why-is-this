@@ -1,0 +1,1280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Doctor — @debuglab/why-is-this</title>
+  <meta name="description" content="Real-time API diagnostic dashboard — Monitor, Detect, Analyze, Explain, Suggest.">
+  <style>
+    :root {
+      --bg: #090909;
+      --bg-panel: #0f0f0f;
+      --bg-hover: #161616;
+      --border: #222222;
+      --border-light: #2a2a2a;
+      --text: #e8e8e8;
+      --text-muted: #666666;
+      --text-dim: #444444;
+      --accent: #ffffff;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+      --blue: #60a5fa;
+      --orange: #fb923c;
+      --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Courier New', monospace;
+      --sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 12px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* ── Header Bar ── */
+    #header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    #header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    #header-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-transform: uppercase;
+    }
+
+    #header-subtitle {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    #status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+    }
+
+    #status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: background 0.3s;
+    }
+
+    #status-dot.live {
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    #status-dot.error {
+      background: var(--red);
+    }
+
+    #header-right {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .header-stat {
+      text-align: right;
+    }
+
+    .header-stat .hs-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .header-stat .hs-value {
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    /* ── Health Score Banner ── */
+    #health-banner {
+      display: flex;
+      align-items: stretch;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel);
+    }
+
+    .hb-cell {
+      flex: 1;
+      padding: 14px 20px;
+      border-right: 1px solid var(--border);
+    }
+
+    .hb-cell:last-child {
+      border-right: none;
+    }
+
+    .hb-label {
+      font-size: 9px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .hb-value {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .hb-sub {
+      font-size: 9px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── Main Grid Layout ── */
+    #main {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      grid-template-rows: auto 1fr;
+      height: calc(100vh - 95px);
+      overflow: hidden;
+    }
+
+    /* ── Issues & Diagnostic Findings Panel ── */
+    #findings-panel {
+      grid-row: 1 / 3;
+      border-right: 1px solid var(--border);
+      overflow-y: auto;
+      background: var(--bg);
+    }
+
+    .panel-title {
+      padding: 10px 14px;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-title-count {
+      font-size: 9px;
+      background: var(--border-light);
+      color: var(--text-muted);
+      border-radius: 2px;
+      padding: 1px 5px;
+    }
+
+    .finding-item {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.12s;
+    }
+
+    .finding-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .finding-item.active {
+      background: var(--bg-hover);
+      border-left: 2px solid var(--accent);
+      padding-left: 12px;
+    }
+
+    .finding-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 5px;
+    }
+
+    .severity-badge {
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      padding: 2px 5px;
+      border-radius: 2px;
+      text-transform: uppercase;
+    }
+
+    .severity-HIGH {
+      background: rgba(248, 113, 113, 0.12);
+      color: var(--red);
+      border: 1px solid rgba(248, 113, 113, 0.25);
+    }
+
+    .severity-MEDIUM {
+      background: rgba(250, 204, 21, 0.12);
+      color: var(--yellow);
+      border: 1px solid rgba(250, 204, 21, 0.25);
+    }
+
+    .severity-LOW {
+      background: rgba(96, 165, 250, 0.12);
+      color: var(--blue);
+      border: 1px solid rgba(96, 165, 250, 0.25);
+    }
+
+    .finding-title {
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .finding-endpoint {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 3px;
+      font-family: var(--mono);
+    }
+
+    .finding-time {
+      font-size: 9px;
+      color: var(--text-dim);
+    }
+
+    /* ── Detailed Finding Drawer ── */
+    #detail-panel {
+      overflow-y: auto;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .detail-empty {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: var(--text-dim);
+      font-size: 11px;
+      letter-spacing: 0.08em;
+    }
+
+    .detail-empty-icon {
+      font-size: 28px;
+      margin-bottom: 10px;
+      opacity: 0.3;
+    }
+
+    .detail-section {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .detail-section-title {
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+
+    .detail-finding-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--accent);
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+
+    .detail-observed {
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.5;
+    }
+
+    .evidence-list {
+      list-style: none;
+      margin-top: 4px;
+    }
+
+    .evidence-list li {
+      font-size: 11px;
+      color: var(--text-muted);
+      padding: 3px 0 3px 14px;
+      position: relative;
+      line-height: 1.4;
+    }
+
+    .evidence-list li::before {
+      content: '›';
+      position: absolute;
+      left: 0;
+      color: var(--text-dim);
+    }
+
+    .detail-explanation {
+      font-size: 11px;
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .detail-confidence {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+    }
+
+    .confidence-bar {
+      display: flex;
+      gap: 2px;
+    }
+
+    .confidence-pip {
+      width: 18px;
+      height: 3px;
+      border-radius: 1px;
+      background: var(--border-light);
+    }
+
+    .confidence-pip.filled-HIGH {
+      background: var(--red);
+    }
+
+    .confidence-pip.filled-MEDIUM {
+      background: var(--yellow);
+    }
+
+    .confidence-pip.filled-LOW {
+      background: var(--blue);
+    }
+
+    .detail-suggestion {
+      font-size: 11px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-light);
+      border-radius: 3px;
+      padding: 8px 12px;
+      line-height: 1.6;
+    }
+
+    .detail-suggestion::before {
+      content: '→  ';
+      color: var(--text-dim);
+    }
+
+    /* ── Endpoints Performance Table ── */
+    #endpoints-panel {
+      overflow-y: auto;
+      background: var(--bg);
+    }
+
+    .ep-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .ep-table th {
+      padding: 7px 12px;
+      text-align: left;
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      user-select: none;
+      white-space: nowrap;
+      background: var(--bg);
+      position: sticky;
+      top: 0;
+    }
+
+    .ep-table th:hover {
+      color: var(--text);
+    }
+
+    .sort-arrow {
+      font-size: 8px;
+      color: var(--text-dim);
+      margin-left: 4px;
+    }
+
+    .ep-table tr.ep-row {
+      cursor: pointer;
+      transition: background 0.1s;
+    }
+
+    .ep-table tr.ep-row:hover td {
+      background: var(--bg-hover);
+    }
+
+    .ep-table tr.ep-row.expanded td {
+      background: var(--bg-hover);
+    }
+
+    .ep-table td {
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .method-badge {
+      display: inline-block;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      padding: 2px 5px;
+      border-radius: 2px;
+      font-family: var(--mono);
+    }
+
+    .method-GET {
+      background: rgba(74, 222, 128, 0.1);
+      color: var(--green);
+    }
+
+    .method-POST {
+      background: rgba(96, 165, 250, 0.1);
+      color: var(--blue);
+    }
+
+    .method-PUT {
+      background: rgba(251, 146, 60, 0.1);
+      color: var(--orange);
+    }
+
+    .method-PATCH {
+      background: rgba(251, 146, 60, 0.1);
+      color: var(--orange);
+    }
+
+    .method-DELETE {
+      background: rgba(248, 113, 113, 0.1);
+      color: var(--red);
+    }
+
+    .method-OTHER {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-muted);
+    }
+
+    .ep-path {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: var(--text);
+    }
+
+    .ep-count {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .ep-latency {
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .latency-fast {
+      color: var(--green);
+    }
+
+    .latency-mid {
+      color: var(--yellow);
+    }
+
+    .latency-slow {
+      color: var(--red);
+    }
+
+    .ep-error-rate {
+      font-family: var(--mono);
+      font-size: 11px;
+    }
+
+    .error-low {
+      color: var(--text-muted);
+    }
+
+    .error-mid {
+      color: var(--yellow);
+    }
+
+    .error-high {
+      color: var(--red);
+    }
+
+    /* Expandable Endpoint Detail View */
+    .ep-detail-row td {
+      padding: 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .ep-detail-inner {
+      padding: 12px 16px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      background: var(--bg-panel);
+      font-size: 10px;
+    }
+
+    .ep-detail-label {
+      font-size: 9px;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .ep-detail-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .ep-stat-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .ep-stat-key {
+      color: var(--text-muted);
+    }
+
+    .ep-stat-val {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ── Live Request Stream ── */
+    #stream-panel {
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--border);
+      background: var(--bg-panel);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      max-height: 200px;
+    }
+
+    #stream-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 7px 14px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    #stream-list {
+      overflow-y: auto;
+      flex: 1;
+      font-family: var(--mono);
+    }
+
+    .stream-row {
+      display: grid;
+      grid-template-columns: 72px 52px 1fr 72px 56px;
+      gap: 0;
+      padding: 4px 14px;
+      border-bottom: 1px solid rgba(34, 34, 34, 0.5);
+      font-size: 10px;
+      transition: background 0.08s;
+      cursor: pointer;
+    }
+
+    .stream-row:hover {
+      background: var(--bg-hover);
+    }
+
+    .sr-time {
+      color: var(--text-dim);
+    }
+
+    .sr-path {
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sr-duration {
+      text-align: right;
+    }
+
+    .sr-status {
+      text-align: right;
+    }
+
+    .status-2xx {
+      color: var(--green);
+    }
+
+    .status-3xx {
+      color: var(--blue);
+    }
+
+    .status-4xx {
+      color: var(--yellow);
+    }
+
+    .status-5xx {
+      color: var(--red);
+    }
+
+    .stream-row.new-flash {
+      animation: rowFlash 0.4s ease-out;
+    }
+
+    @keyframes rowFlash {
+      0% {
+        background: rgba(255, 255, 255, 0.05);
+      }
+
+      100% {
+        background: transparent;
+      }
+    }
+
+    /* ── Custom Scrollbars ── */
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border-light);
+      border-radius: 2px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #3a3a3a;
+    }
+
+    /* ── No Data / Connecting Overlay ── */
+    #no-data-overlay {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      z-index: 200;
+      transition: opacity 0.5s;
+    }
+
+    #no-data-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .no-data-title {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .no-data-sub {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .no-data-code {
+      margin-top: 24px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 12px 20px;
+      font-size: 11px;
+      color: var(--text);
+      white-space: pre;
+    }
+
+    .ticker {
+      display: inline-block;
+      animation: blink 1.1s step-end infinite;
+      color: var(--green);
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- No Data / Connection Setup Overlay -->
+  <div id="no-data-overlay">
+    <div class="no-data-title">⬡ API DOCTOR</div>
+    <div class="no-data-sub">Connecting to monitored application on port {{IPC_PORT}}…</div>
+    <div class="no-data-code">// In your application:
+      import why from '@debuglab/why-is-this';
+      why.api.doctor(app);
+
+      // Then run: npx why-is-this doctor</div>
+  </div>
+
+  <!-- Header Bar -->
+  <div id="header">
+    <div id="header-left">
+      <div>
+        <div id="header-title">⬡ WHY-IS-THIS · API DOCTOR</div>
+        <div id="header-subtitle">Monitor → Detect → Analyze → Explain → Suggest</div>
+      </div>
+      <div id="status-indicator">
+        <div id="status-dot"></div>
+        <span id="status-text">CONNECTING</span>
+      </div>
+      <div id="session-timer" style="font-size: 10px; color: var(--text-dim);">00:00:00</div>
+    </div>
+    <div id="header-right">
+      <div class="header-stat">
+        <div class="hs-label">Health</div>
+        <div class="hs-value" id="h-score" style="color: var(--green)">—</div>
+      </div>
+      <div class="header-stat">
+        <div class="hs-label">Requests</div>
+        <div class="hs-value" id="h-total">—</div>
+      </div>
+      <div class="header-stat">
+        <div class="hs-label">P95</div>
+        <div class="hs-value" id="h-p95">—</div>
+      </div>
+      <div class="header-stat">
+        <div class="hs-label">Error Rate</div>
+        <div class="hs-value" id="h-errrate">—</div>
+      </div>
+      <div class="header-stat">
+        <div class="hs-label">Issues</div>
+        <div class="hs-value" id="h-issues">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Health Overview Banner -->
+  <div id="health-banner">
+    <div class="hb-cell">
+      <div class="hb-label">Health Score</div>
+      <div class="hb-value" id="hb-score" style="color: var(--green)">—</div>
+      <div class="hb-sub" id="hb-score-sub">Calculating…</div>
+    </div>
+    <div class="hb-cell">
+      <div class="hb-label">Total Requests</div>
+      <div class="hb-value" id="hb-total">—</div>
+      <div class="hb-sub" id="hb-endpoints">0 endpoints</div>
+    </div>
+    <div class="hb-cell">
+      <div class="hb-label">Global P95 Latency</div>
+      <div class="hb-value" id="hb-p95">—</div>
+      <div class="hb-sub">95th percentile</div>
+    </div>
+    <div class="hb-cell">
+      <div class="hb-label">Error Rate</div>
+      <div class="hb-value" id="hb-errrate">—</div>
+      <div class="hb-sub">HTTP 4xx/5xx</div>
+    </div>
+    <div class="hb-cell">
+      <div class="hb-label">Issues Detected</div>
+      <div class="hb-value" id="hb-issues">—</div>
+      <div class="hb-sub" id="hb-issues-sub">No issues found</div>
+    </div>
+  </div>
+
+  <!-- Main Grid Layout -->
+  <div id="main">
+
+    <!-- Issues & Diagnostic Findings Panel -->
+    <div id="findings-panel">
+      <div class="panel-title">
+        <span>Issues Detected</span>
+        <span class="panel-title-count" id="findings-count">0</span>
+      </div>
+      <div id="findings-list">
+        <div class="detail-empty" style="height: 160px;">
+          <div class="detail-empty-icon">◎</div>
+          <div>No issues detected yet</div>
+          <div style="color: var(--text-dim); margin-top: 4px; font-size: 10px;">Send some requests to begin</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Diagnostic Explanation Drawer -->
+    <div id="detail-panel">
+      <div class="detail-empty">
+        <div class="detail-empty-icon">◉</div>
+        <div>Select an issue to inspect</div>
+      </div>
+    </div>
+
+    <!-- Endpoints Performance Table -->
+    <div id="endpoints-panel">
+      <div class="panel-title"
+        style="border-top: 1px solid var(--border); position: sticky; top: 0; z-index: 10; background: var(--bg);">
+        <span>Endpoints</span>
+        <span class="panel-title-count" id="ep-count">0</span>
+      </div>
+      <table class="ep-table" id="ep-table">
+        <thead>
+          <tr>
+            <th data-sort="method" style="width: 60px;">Method</th>
+            <th data-sort="path">Path</th>
+            <th data-sort="requestCount" style="width: 80px;">Requests <span class="sort-arrow">↓</span></th>
+            <th data-sort="p95" style="width: 80px;">P95</th>
+            <th data-sort="errorRate" style="width: 80px;">Error Rate</th>
+          </tr>
+        </thead>
+        <tbody id="ep-tbody">
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 10px;">No
+              requests captured yet</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <!-- Real-time Request Stream -->
+  <div id="stream-panel">
+    <div id="stream-title">
+      <span class="panel-title" style="border: none; padding: 0; position: static; background: none;">
+        Live Request Stream <span class="ticker">_</span>
+      </span>
+      <span id="stream-count" style="font-size: 9px; color: var(--text-dim);">0 captured</span>
+    </div>
+    <div id="stream-list"></div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      // ── Dashboard State ──
+      let snapshot = null;
+      let activeFindingId = null;
+      let streamCount = 0;
+      let sessionStart = Date.now();
+      let sortKey = 'requestCount';
+      let sortDir = -1; // -1 = descending
+
+      // ── Formatting Helpers ──
+      function fmt(ms) {
+        if (ms === undefined || ms === null) return '—';
+        if (ms < 1) return '<1ms';
+        if (ms < 1000) return Math.round(ms) + 'ms';
+        return (ms / 1000).toFixed(2) + 's';
+      }
+
+      function fmtPct(rate) {
+        if (rate === undefined || rate === null) return '—';
+        return (rate * 100).toFixed(1) + '%';
+      }
+
+      function timeStr(iso) {
+        try {
+          const d = new Date(iso);
+          return d.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        } catch {
+          return '—';
+        }
+      }
+
+      function latencyClass(ms) {
+        if (ms < 200) return 'latency-fast';
+        if (ms < 800) return 'latency-mid';
+        return 'latency-slow';
+      }
+
+      function errorClass(rate) {
+        if (rate < 0.01) return 'error-low';
+        if (rate < 0.05) return 'error-mid';
+        return 'error-high';
+      }
+
+      function statusClass(code) {
+        if (code < 300) return 'status-2xx';
+        if (code < 400) return 'status-3xx';
+        if (code < 500) return 'status-4xx';
+        return 'status-5xx';
+      }
+
+      function scoreColor(score) {
+        if (score >= 80) return 'var(--green)';
+        if (score >= 60) return 'var(--yellow)';
+        return 'var(--red)';
+      }
+
+      function methodClass(method) {
+        const m = (method || '').toUpperCase();
+        return 'method-' + (['GET', 'POST', 'PUT', 'PATCH', 'DELETE'].includes(m) ? m : 'OTHER');
+      }
+
+      function esc(str) {
+        if (!str) return '';
+        return String(str)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      // ── Session Timer ──
+      setInterval(function () {
+        const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+        const h = String(Math.floor(elapsed / 3600)).padStart(2, '0');
+        const m = String(Math.floor((elapsed % 3600) / 60)).padStart(2, '0');
+        const s = String(elapsed % 60).padStart(2, '0');
+        const timerEl = document.getElementById('session-timer');
+        if (timerEl) timerEl.textContent = h + ':' + m + ':' + s;
+      }, 1000);
+
+      // ── UI Rendering ──
+      function renderHealth(health, findingsCount) {
+        if (!health) return;
+        const score = health.score;
+        const color = scoreColor(score);
+
+        const hScore = document.getElementById('h-score');
+        if (hScore) {
+          hScore.textContent = score + '/100';
+          hScore.style.color = color;
+        }
+
+        const hTotal = document.getElementById('h-total');
+        if (hTotal) hTotal.textContent = health.totalRequests.toLocaleString();
+
+        const hP95 = document.getElementById('h-p95');
+        if (hP95) hP95.textContent = fmt(health.globalP95Ms);
+
+        const hErrRate = document.getElementById('h-errrate');
+        if (hErrRate) hErrRate.textContent = fmtPct(health.globalErrorRate);
+
+        const hIssues = document.getElementById('h-issues');
+        if (hIssues) hIssues.textContent = findingsCount;
+
+        const hbScore = document.getElementById('hb-score');
+        if (hbScore) {
+          hbScore.textContent = score + '/100';
+          hbScore.style.color = color;
+        }
+
+        const hbScoreSub = document.getElementById('hb-score-sub');
+        if (hbScoreSub) hbScoreSub.textContent = score >= 80 ? 'Healthy' : score >= 60 ? 'Degraded' : 'Critical';
+
+        const hbTotal = document.getElementById('hb-total');
+        if (hbTotal) hbTotal.textContent = health.totalRequests.toLocaleString();
+
+        const hbEndpoints = document.getElementById('hb-endpoints');
+        if (hbEndpoints) hbEndpoints.textContent = health.activeEndpoints + ' endpoint' + (health.activeEndpoints !== 1 ? 's' : '');
+
+        const hbP95 = document.getElementById('hb-p95');
+        if (hbP95) hbP95.textContent = fmt(health.globalP95Ms);
+
+        const hbErrRate = document.getElementById('hb-errrate');
+        if (hbErrRate) {
+          hbErrRate.textContent = fmtPct(health.globalErrorRate);
+          hbErrRate.style.color = health.globalErrorRate > 0.05 ? 'var(--red)' : health.globalErrorRate > 0.02 ? 'var(--yellow)' : 'var(--green)';
+        }
+
+        const hbIssues = document.getElementById('hb-issues');
+        if (hbIssues) hbIssues.textContent = findingsCount;
+
+        const hbIssuesSub = document.getElementById('hb-issues-sub');
+        if (hbIssuesSub) hbIssuesSub.textContent = findingsCount === 0 ? 'No issues found' : findingsCount + ' issue' + (findingsCount !== 1 ? 's' : '') + ' detected';
+      }
+
+      function renderFindings(findings) {
+        const countEl = document.getElementById('findings-count');
+        if (countEl) countEl.textContent = findings.length;
+
+        const list = document.getElementById('findings-list');
+        if (!list) return;
+
+        if (findings.length === 0) {
+          list.innerHTML = '<div class="detail-empty" style="height: 160px;"><div class="detail-empty-icon">◎</div><div>No issues detected yet</div><div style="color: var(--text-dim); margin-top: 4px; font-size: 10px;">Send some requests to begin</div></div>';
+          return;
+        }
+
+        list.innerHTML = findings.map(function (f) {
+          const active = f.id === activeFindingId ? ' active' : '';
+          return '<div class="finding-item' + active + '" data-id="' + esc(f.id) + '">' +
+            '<div class="finding-header">' +
+            '<span class="severity-badge severity-' + f.severity + '">' + f.severity + '</span>' +
+            '<span class="finding-time">' + timeStr(f.detectedAt) + '</span>' +
+            '</div>' +
+            '<div class="finding-title">' + esc(f.title) + '</div>' +
+            (f.endpoint ? '<div class="finding-endpoint">' + esc(f.endpoint) + '</div>' : '') +
+            '</div>';
+        }).join('');
+
+        list.querySelectorAll('.finding-item').forEach(function (el) {
+          el.addEventListener('click', function () {
+            activeFindingId = el.dataset.id;
+            renderFindings(findings);
+            const f = findings.find(function (x) { return x.id === activeFindingId; });
+            if (f) renderFindingDetail(f);
+          });
+        });
+      }
+
+      function renderFindingDetail(f) {
+        const detailPanel = document.getElementById('detail-panel');
+        if (!detailPanel) return;
+
+        const confPips = ['HIGH', 'MEDIUM', 'LOW'].map(function (level, i) {
+          const fill = (f.confidence === 'HIGH') ? i < 3 : (f.confidence === 'MEDIUM') ? i < 2 : i < 1;
+          return '<div class="confidence-pip' + (fill ? ' filled-' + f.confidence : '') + '"></div>';
+        }).join('');
+
+        detailPanel.innerHTML =
+          '<div class="detail-section">' +
+          '<div class="detail-finding-title">' + esc(f.title) + '</div>' +
+          '<span class="severity-badge severity-' + f.severity + '">' + f.severity + '</span>' +
+          '</div>' +
+          '<div class="detail-section">' +
+          '<div class="detail-section-title">Observed</div>' +
+          '<div class="detail-observed">' + esc(f.observed) + '</div>' +
+          '</div>' +
+          '<div class="detail-section">' +
+          '<div class="detail-section-title">Evidence</div>' +
+          '<ul class="evidence-list">' +
+          f.evidence.map(function (e) { return '<li>' + esc(e) + '</li>'; }).join('') +
+          '</ul>' +
+          '</div>' +
+          '<div class="detail-section">' +
+          '<div class="detail-section-title">Possible Explanation</div>' +
+          '<div class="detail-explanation">' + esc(f.possibleExplanation) + '</div>' +
+          '</div>' +
+          '<div class="detail-section">' +
+          '<div class="detail-section-title">Confidence</div>' +
+          '<div class="detail-confidence">' +
+          '<span class="confidence-bar">' + confPips + '</span>' +
+          '<span style="color: var(--text-muted);">' + f.confidence + '</span>' +
+          '</div>' +
+          '</div>' +
+          '<div class="detail-section">' +
+          '<div class="detail-section-title">Suggested Investigation</div>' +
+          '<div class="detail-suggestion">' + esc(f.suggestedInvestigation) + '</div>' +
+          '</div>';
+      }
+
+      function renderEndpoints(endpoints) {
+        const sorted = endpoints.slice().sort(function (a, b) {
+          let av, bv;
+          switch (sortKey) {
+            case 'p95': av = a.latency.p95; bv = b.latency.p95; break;
+            case 'errorRate': av = a.errorRate; bv = b.errorRate; break;
+            case 'path': av = a.path; bv = b.path; break;
+            case 'method': av = a.method; bv = b.method; break;
+            default: av = a.requestCount; bv = b.requestCount;
+          }
+          if (av < bv) return sortDir;
+          if (av > bv) return -sortDir;
+          return 0;
+        });
+
+        const epCount = document.getElementById('ep-count');
+        if (epCount) epCount.textContent = endpoints.length;
+
+        const tbody = document.getElementById('ep-tbody');
+        if (!tbody) return;
+
+        if (endpoints.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-dim); padding: 20px; font-size: 10px;">No requests captured yet</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = sorted.map(function (ep, idx) {
+          const key = ep.method + ' ' + ep.path;
+          return '<tr class="ep-row" data-ep-key="' + esc(key) + '">' +
+            '<td><span class="method-badge ' + methodClass(ep.method) + '">' + esc(ep.method) + '</span></td>' +
+            '<td class="ep-path">' + esc(ep.path) + '</td>' +
+            '<td class="ep-count">' + ep.requestCount + '</td>' +
+            '<td class="ep-latency ' + latencyClass(ep.latency.p95) + '">' + fmt(ep.latency.p95) + '</td>' +
+            '<td class="ep-error-rate ' + errorClass(ep.errorRate) + '">' + fmtPct(ep.errorRate) + '</td>' +
+            '</tr>' +
+            '<tr class="ep-detail-row" id="ep-detail-' + idx + '" style="display: none;">' +
+            '<td colspan="5">' +
+            '<div class="ep-detail-inner">' +
+            '<div class="ep-detail-block">' +
+            '<div class="ep-detail-label">Latency</div>' +
+            '<div class="ep-detail-stats">' +
+            '<div class="ep-stat-row"><span class="ep-stat-key">P50</span><span class="ep-stat-val">' + fmt(ep.latency.p50) + '</span></div>' +
+            '<div class="ep-stat-row"><span class="ep-stat-key">P95</span><span class="ep-stat-val">' + fmt(ep.latency.p95) + '</span></div>' +
+            '<div class="ep-stat-row"><span class="ep-stat-key">P99</span><span class="ep-stat-val">' + fmt(ep.latency.p99) + '</span></div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="ep-detail-block">' +
+            '<div class="ep-detail-label">Error Summary</div>' +
+            '<div class="ep-detail-stats">' +
+            '<div class="ep-stat-row"><span class="ep-stat-key">Error Rate</span><span class="ep-stat-val">' + fmtPct(ep.errorRate) + '</span></div>' +
+            '<div class="ep-stat-row"><span class="ep-stat-key">Error Count</span><span class="ep-stat-val">' + ep.errorCount + '</span></div>' +
+            '<div class="ep-stat-row"><span class="ep-stat-key">Total</span><span class="ep-stat-val">' + ep.requestCount + '</span></div>' +
+            '</div>' +
+            '</div>' +
+            '<div class="ep-detail-block">' +
+            '<div class="ep-detail-label">Status Distribution</div>' +
+            '<div class="ep-detail-stats">' +
+            Object.entries(ep.statusDistribution).slice(0, 6).map(function (pair) {
+              return '<div class="ep-stat-row"><span class="ep-stat-key">HTTP ' + esc(pair[0]) + '</span><span class="ep-stat-val">' + pair[1] + '</span></div>';
+            }).join('') +
+            '</div>' +
+            '</div>' +
+            '</div>' +
+            '</td>' +
+            '</tr>';
+        }).join('');
+
+        tbody.querySelectorAll('.ep-row').forEach(function (row, idx) {
+          row.addEventListener('click', function () {
+            const detail = document.getElementById('ep-detail-' + idx);
+            if (!detail) return;
+            const isOpen = detail.style.display !== 'none';
+            detail.style.display = isOpen ? 'none' : 'table-row';
+            row.classList.toggle('expanded', !isOpen);
+          });
+        });
+      }
+
+      // Sort Click Handlers
+      document.querySelectorAll('.ep-table th[data-sort]').forEach(function (th) {
+        th.addEventListener('click', function () {
+          const key = th.dataset.sort;
+          if (sortKey === key) { sortDir = -sortDir; }
+          else { sortKey = key; sortDir = -1; }
+          document.querySelectorAll('.ep-table th .sort-arrow').forEach(function (el) { el.textContent = ''; });
+          th.querySelector('.sort-arrow') && (th.querySelector('.sort-arrow').textContent = sortDir === -1 ? '↓' : '↑');
+          if (snapshot) renderEndpoints(snapshot.endpoints);
+        });
+      });
+
+      function addStreamRow(record) {
+        const list = document.getElementById('stream-list');
+        if (!list) return;
+
+        const row = document.createElement('div');
+        row.className = 'stream-row new-flash';
+        row.innerHTML =
+          '<span class="sr-time">' + timeStr(record.timestamp) + '</span>' +
+          '<span class="sr-method"><span class="method-badge ' + methodClass(record.method) + '">' + esc(record.method) + '</span></span>' +
+          '<span class="sr-path">' + esc(record.path) + '</span>' +
+          '<span class="sr-duration ' + latencyClass(record.durationMs) + '">' + fmt(record.durationMs) + '</span>' +
+          '<span class="sr-status ' + statusClass(record.statusCode) + '">' + record.statusCode + '</span>';
+        list.insertBefore(row, list.firstChild);
+
+        streamCount++;
+        const countEl = document.getElementById('stream-count');
+        if (countEl) countEl.textContent = streamCount.toLocaleString() + ' captured';
+
+        while (list.children.length > 200) {
+          list.removeChild(list.lastChild);
+        }
+      }
+
+      function applySnapshot(snap) {
+        snapshot = snap;
+
+        const overlay = document.getElementById('no-data-overlay');
+        if (overlay) overlay.classList.add('hidden');
+
+        const dot = document.getElementById('status-dot');
+        if (dot) dot.className = 'live';
+
+        const text = document.getElementById('status-text');
+        if (text) text.textContent = 'LIVE';
+
+        renderHealth(snap.health, snap.findings.length);
+        renderFindings(snap.findings);
+        renderEndpoints(snap.endpoints);
+
+        if (snap.recentStream && snap.recentStream.length > 0 && streamCount === 0) {
+          const recent = snap.recentStream.slice(0, 50).reverse();
+          recent.forEach(addStreamRow);
+        }
+      }
+
+      // ── Server-Sent Events Stream ──
+      function connect() {
+        const es = new EventSource('/api/events');
+
+        es.addEventListener('snapshot', function (e) {
+          try { applySnapshot(JSON.parse(e.data)); } catch (err) { console.error('snapshot parse error', err); }
+        });
+
+        es.addEventListener('request', function (e) {
+          try {
+            const record = JSON.parse(e.data);
+            addStreamRow(record);
+          } catch (err) { console.error('request parse error', err); }
+        });
+
+        es.addEventListener('update', function (e) {
+          try { applySnapshot(JSON.parse(e.data)); } catch (err) { console.error('update parse error', err); }
+        });
+
+        es.onerror = function () {
+          const dot = document.getElementById('status-dot');
+          if (dot) dot.className = 'error';
+
+          const text = document.getElementById('status-text');
+          if (text) text.textContent = 'DISCONNECTED';
+
+          es.close();
+          setTimeout(connect, 3000);
+        };
+      }
+
+      connect();
+    })();
+  </script>
+</body>
+
+</html>

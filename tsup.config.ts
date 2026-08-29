@@ -1,7 +1,10 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
-  entry: ['src/index.ts'],
+  entry: {
+    index: 'src/index.ts',
+    'api-doctor-cli': 'src/cli/api-doctor-cli.ts',
+  },
   format: ['esm', 'cjs'],
   dts: true,
   sourcemap: true,
@@ -13,6 +16,9 @@ export default defineConfig({
   outDir: 'dist',
   // Suppress named+default export warning: this package intentionally exports
   // both `why` (named) and `why` (default) for maximum consumer flexibility.
+  loader: {
+    '.html': 'text',
+  },
   esbuildOptions(options) {
     options.logOverride = { 'commonjs-variable-in-esm': 'silent' };
   },

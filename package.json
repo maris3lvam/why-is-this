@@ -1,6 +1,6 @@
 {
   "name": "@debuglab/why-is-this",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "Developer-focused diagnostic toolkit for runtime JavaScript value inspection",
   "type": "module",
   "engines": {
@@ -16,7 +16,13 @@
         "types": "./dist/index.d.cts",
         "default": "./dist/index.cjs"
       }
+    },
+    "./api-doctor-cli": {
+      "import": "./dist/api-doctor-cli.js"
     }
+  },
+  "bin": {
+    "why-is-this": "./dist/api-doctor-cli.js"
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -30,6 +36,7 @@
   ],
   "scripts": {
     "build": "tsup",
+    "build:local": "tsup && cp src/api-doctor/dashboard/index.html dist/",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
